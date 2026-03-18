@@ -1,0 +1,28 @@
+# ── SECRET FILES — never upload ──
+static/js/config.js
+
+# ── Windows system files ──
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ── VS Code ──
+.vscode/
+
+# ── Python ──
+__pycache__/
+*.pyc
+*.pyo
+*.pkl
+*.egg-info/
+dist/
+build/
+venv/
+.env
+
+#BNBX── Data files (can be large) ──
+data/*.csv
+data/*.zip
+
+# ── macOS ──
+.DS_Store

@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TruthLens — AI Fake News Detector</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="static/css/style.css" />
+  </head>
+  <body>
+      <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark">TL</div>
+        <div class="logo-text">Truth<span>Lens</span></div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="showPage('detect', this)">
+          <span class="nav-icon">⚡</span>
+          <span class="nav-label">Detector</span>
+        </button>
+        <button class="nav-item" onclick="showPage('history', this)">
+          <span class="nav-icon">🕓</span>
+          <span class="nav-label">History</span>
+        </button>
+        <button class="nav-item" onclick="showPage('guide', this)">
+          <span class="nav-icon">📖</span>
+          <span class="nav-label">Guide</span>
+        </button>
+        <button class="nav-item" onclick="showPage('sources', this)">
+          <span class="nav-icon">🔗</span>
+          <span class="nav-label">Sources</span>
+        </button>
+        <button class="nav-item" onclick="showPage('about', this)">
+          <span class="nav-icon">👤</span>
+          <span class="nav-label">About</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="api-status" id="apiStatus">
+          <span class="status-dot"></span>
+          <span class="status-text">Gemini Ready</span>
+        </div>
+      </div>
+    </aside>
+
+ 
+    <main class="main">
+  
+      <div class="topbar">
+        <button class="hamburger" onclick="toggleSidebar()">☰</button>
+        <div class="topbar-logo">TruthLens</div>
+      </div>
+
+         <div class="page active" id="page-detect">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">News <em>Detector</em></h1>
+            <p class="page-subtitle">
+              Paste any article or headline — AI analyzes it in seconds
+            </p>
+          </div>
+          <div class="stats-pills">
+            <div class="stat-pill">
+              <span id="totalAnalyzed">0</span> analyzed
+            </div>
+            <div class="stat-pill fake-pill">
+              <span id="totalFake">0</span> fake
+            </div>
+            <div class="stat-pill real-pill">
+              <span id="totalReal">0</span> real
+            </div>
+          </div>
+        </div>
+
+        <!-- Input Card -->
+        <div class="card input-card">
+          <div class="card-label">Article Text</div>
+          <textarea
+            id="newsInput"
+            placeholder="Paste a full news article, headline, or any suspicious text here...&#10;&#10;Tip: longer articles give more accurate results."
+          ></textarea>
+          <div class="input-footer">
+            <span class="char-count" id="charCount">0 characters</span>
+            <div class="input-actions">
+              <button class="btn btn-ghost" onclick="clearInput()">
+                Clear
+              </button>
+              <button
+                class="btn btn-primary"
+                onclick="analyzeNews()"
+                id="analyzeBtn"
+              >
+                <span class="btn-icon">⚡</span> Analyze
+              </button>
+            </div>
+          </div>
+        </div>
+
+    
+        <div class="url-row">
+          <div class="url-input-wrap">
+            <span class="url-icon">🌐</span>
+            <input
+              type="text"
+              id="urlInput"
+              placeholder="Or paste a news URL here and click Fetch..."
+            />
+          </div>
+          <button class="btn btn-outline" onclick="fetchUrl()">
+            Fetch URL
+          </button>
+        </div>
+
+        <div class="loader-wrap" id="loader">
+          <div class="loader-ring"></div>
+          <div class="loader-steps" id="loaderStep">Tokenizing text...</div>
+        </div>
+
+        <div id="resultWrap" style="display: none"></div>
+
+        <div class="quick-ref">
+          <div class="quick-ref-title">Quick Reference</div>
+          <div class="quick-ref-grid">
+            <div class="qr-card green">
+              <div class="qr-icon">✅</div>
+              <div class="qr-label">Credible Signs</div>
+              <ul class="qr-list">
+                <li>Named, verifiable sources</li>
+                <li>Neutral factual tone</li>
+                <li>Author byline + date</li>
+                <li>Multiple outlets confirm</li>
+              </ul>
+            </div>
+            <div class="qr-card red">
+              <div class="qr-icon">🚨</div>
+              <div class="qr-label">Red Flags</div>
+              <ul class="qr-list">
+                <li>ALL CAPS headlines</li>
+                <li>Anonymous sources</li>
+                <li>Emotional manipulation</li>
+                <li>Suspicious domain names</li>
+              </ul>
+            </div>
+            <div class="qr-card amber">
+              <div class="qr-icon">⚠️</div>
+              <div class="qr-label">Check Carefully</div>
+              <ul class="qr-list">
+                <li>Satire / parody sites</li>
+                <li>Opinion as fact</li>
+                <li>Misleading statistics</li>
+                <li>Out-of-context images</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-history">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Analysis <em>History</em></h1>
+            <p class="page-subtitle">
+              Every article you've analyzed this session
+            </p>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="clearHistory()">
+            Clear All
+          </button>
+        </div>
+        <div id="historyList">
+          <div class="empty-state">
+            <div class="empty-icon">🕓</div>
+            <div class="empty-title">No history yet</div>
+            <div class="empty-sub">
+              Analyze an article and it will appear here
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="page" id="page-guide">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">Verification <em>Guide</em></h1>
+            <p class="page-subtitle">
+              How to spot fake news like a fact-checker
+            </p>
+          </div>
+        </div>
+
+        <div class="guide-grid">
+          <div class="guide-section">
+            <div class="guide-section-header green">
+              <span>🟢</span> Signals of Legitimate News
+            </div>
+            <div class="signal-list">
+              <div class="signal-row-item">
+                <div class="signal-dot green"></div>
+                <div>
+                  <div class="signal-title">Named, verifiable sources</div>
+                  <div class="signal-desc">
+                    Real experts and officials cited by full name and title —
+                    you can look them up independently.
+                  </div>
+                </div>
+              </div>
+              <div class="signal-row-item">
+                <div class="signal-dot green"></div>
+                <div>
+                  <div class="signal-title">Neutral, factual writing tone</div>
+                  <div class="signal-desc">
+                    Reports facts without making you angry or scared. Opinion
+                    pieces are clearly labeled as such.
+                  </div>
+                </div>
+              </div>
+              <div class="signal-row-item">
+                <div class="signal-dot green"></div>
+                <div>
+                  <div class="signal-title">
+                    Author byline and publication date
+                  </div>
+                  <div class="signal-desc">
+                    A named journalist with a track record and a clear timestamp
+                    you can verify.
+                  </div>
+                </div>
+              </div>
+              <div class="signal-row-item">
+                <div class="signal-dot green"></div>
+                <div>
+                  <div class="signal-title">
+                    Multiple outlets reporting the same story
+                  </div>
+                  <div class="signal-desc">
+                    If it's real and important, independent outlets confirm it.
+                    One unknown site only = suspicious.
+                  </div>
+                </div>
+              </div>
+              <div class="signal-row-item">
+                <div class="signal-dot green"></div>
+                <div>
+                  <div class="signal-title">
+                    Editorial transparency and corrections
+                  </div>
+                  <div class="signal-desc">
+                    Reputable outlets issue corrections. They have About pages,
+                    editorial teams, and contact info.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="guide-section">
+            <div class="guide-section-header red">
+              <span>🔴</span> Red Flags for Fake News
+            </div>
+            <div class="signal-list">
+              <div class="signal-row-item">
+                <div class="signal-dot red"></div>
+                <div>
+                  <div class="signal-title">
+                    Sensational or clickbait headlines
+                  </div>
+                  <div class="signal-desc">
+                    ALL CAPS, excessive punctuation!!!, "You won't BELIEVE..." —
+                    triggers clicks, not understanding.
+                  </div>
+                </div>
+              </div>
+              <div class="signal-row-item">
+                <div class="signal-dot red"></div>
+                <div>
+                  <div class="signal-title">
+                    Anonymous or unverifiable sources
+                  </div>
+                  <div class="signal-desc">
+                    "Sources say...", "insiders report..." — without names,
+                    these could be completely invented.
+                  </div>
+                </div>
+              </div>
+              <div class="signal-row-item">
+                <div class="signal-dot red"></div>
+                <div>
+                  <div class="signal-title">
+                    Out-of-context images or videos
+                  </div>
+                  <div class="signal-desc">
+                    Old photos repurposed as breaking news. Always
+                    reverse-image-search suspicious visuals.
+                  </div>
+                </div>
+              </div>
+              <div class="signal-row-item">
+                <div class="signal-dot red"></div>
+                <div>
+                  <div class="signal-title">Poor grammar and spelling</div>
+                  <div class="signal-desc">
+                    Professional outlets have editors. Frequent errors signal
+                    low quality or rushed fabrication.
+                  </div>
+                </div>
+              </div>
+              <div class="signal-row-item">
+                <div class="signal-dot red"></div>
+                <div>
+                  <div class="signal-title">Impersonator domain names</div>
+                  <div class="signal-desc">
+                    "ABCnews.com.co" or "CNN-breaking.net" — check the full URL
+                    very carefully before trusting.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="guide-section full-width">
+            <div class="guide-section-header blue">
+              <span>✅</span> 7-Step Verification Checklist
+            </div>
+            <div class="checklist-grid">
+              <div class="check-item">
+                <span class="check-num">01</span
+                ><span class="check-icon">🔗</span>
+                <div>
+                  <strong>Domain check</strong> — Is it a known, established
+                  outlet?
+                </div>
+              </div>
+              <div class="check-item">
+                <span class="check-num">02</span
+                ><span class="check-icon">🗓️</span>
+                <div>
+                  <strong>Date check</strong> — Is this current, or recycled old
+                  news?
+                </div>
+              </div>
+              <div class="check-item">
+                <span class="check-num">03</span
+                ><span class="check-icon">🖼️</span>
+                <div>
+                  <strong>Image check</strong> — Reverse-image-search any photos
+                </div>
+              </div>
+              <div class="check-item">
+                <span class="check-num">04</span
+                ><span class="check-icon">📰</span>
+                <div>
+                  <strong>Cross-check</strong> — Are other outlets reporting
+                  this too?
+                </div>
+              </div>
+              <div class="check-item">
+                <span class="check-num">05</span
+                ><span class="check-icon">👤</span>
+                <div>
+                  <strong>Author check</strong> — Does the journalist have a
+                  track record?
+                </div>
+              </div>
+              <div class="check-item">
+                <span class="check-num">06</span
+                ><span class="check-icon">🧩</span>
+                <div>
+                  <strong>Body check</strong> — Does the article actually
+                  support the headline?
+                </div>
+              </div>
+              <div class="check-item">
+                <span class="check-num">07</span
+                ><span class="check-icon">🌐</span>
+                <div>
+                  <strong>Fact-checker</strong> — Search on Snopes, PolitiFact,
+                  or AltNews
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+ 
+      <div class="page" id="page-sources">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">News <em>Sources</em></h1>
+            <p class="page-subtitle">
+              Save trusted sites — visit, copy URL, or paste text directly
+            </p>
+          </div>
+        </div>
+
+        <!-- Add form -->
+        <div class="card add-source-card">
+          <div class="card-label">Add New Source</div>
+          <div class="add-form-grid">
+            <div class="form-field">
+              <label>Site Name</label>
+              <input
+                type="text"
+                class="form-input"
+                id="s-name"
+                placeholder="e.g. BBC News"
+              />
+            </div>
+            <div class="form-field">
+              <label>URL</label>
+              <input
+                type="text"
+                class="form-input"
+                id="s-url"
+                placeholder="https://bbc.com/news"
+              />
+            </div>
+            <div class="form-field">
+              <label>Category</label>
+              <select class="form-input" id="s-cat">
+                <option>International</option>
+                <option>National</option>
+                <option>Fact Checkers</option>
+                <option>Science</option>
+                <option>Business</option>
+                <option>Politics</option>
+                <option>Satire / Parody</option>
+                <option>Known Unreliable</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Reliability</label>
+              <select class="form-input" id="s-rel">
+                <option value="high">✅ High — Trusted</option>
+                <option value="medium">⚠️ Medium — Caution</option>
+                <option value="low">🚨 Low — Unreliable</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addSource()">
+            + Add Source
+          </button>
+        </div>
+
+        <!-- Legend -->
+        <div class="rel-legend">
+          <div class="rel-item">
+            <span class="rel-dot green"></span>High reliability
+          </div>
+          <div class="rel-item">
+            <span class="rel-dot amber"></span>Medium reliability
+          </div>
+          <div class="rel-item">
+            <span class="rel-dot red"></span>Low / unreliable
+          </div>
+        </div>
+
+        <div class="sources-grid" id="sourcesGrid"></div>
+      </div>
+
+      
+      <div class="page" id="page-about">
+        <div class="page-header">
+          <div class="page-header-left">
+            <h1 class="page-title">About <em>Me</em></h1>
+            <p class="page-subtitle">The developer behind TruthLens</p>
+          </div>
+        </div>
+
+        <div class="about-layout">
+          <!-- LEFT: Profile -->
+          <div class="about-profile-col">
+            <div class="profile-card card">
+              
+               
+               <img src="static/images/photo.jpg" class="avatar-photo" alt="Your Name">
+
+              
+              <div class="profile-name">Niviya nagrale</div>
+
+             
+              <div class="profile-title">
+                AI/ML | JAVA | Developer | SQL· MCA
+              </div>
+
+              <!-- ── my college ── -->
+              <div class="profile-college">mumbai university</div>
+
+              <!-- ── my BIO ── -->
+              <div class="profile-bio">
+                hello, thanks for your time! I'm Niviya currently a final year
+                MCA student. I'm Upskilling in PYTHON, JAVA, SQL, web
+                technologies.
+              </div>
+
+              <div class="profile-contacts">
+                <a class="contact-btn" href="niviyanagrale@email.com">
+                  <span class="contact-btn-icon">📧</span>
+                  <div class="contact-btn-info">
+                    <span class="contact-btn-label">Email</span>
+                    <span class="contact-btn-value"
+                      >niviyanagrale@email.com</span
+                    >
+                  </div>
+                </a>
+
+                <a
+                  class="contact-btn"
+                  href="https://github.com/Niviyanagrale"
+                  target="_blank"
+                >
+                  <span class="contact-btn-icon">💻</span>
+                  <div class="contact-btn-info">
+                    <span class="contact-btn-label">GitHub</span>
+                    <span class="contact-btn-value"
+                      >github.com/Niviyanagrale</span
+                    >
+                  </div>
+                </a>
+
+                <a
+                  class="contact-btn"
+                  href="www.linkedin.com/in/niviya-nagrale"
+                  target="_blank"
+                >
+          
+                  <span class="contact-btn-icon">🔗</span>
+                  <div class="contact-btn-info">
+                    <span class="contact-btn-label">LinkedIn</span>
+                    <span class="contact-btn-value"
+                      >linkedin.com/in/niviya-nagrale</span
+                    >
+                    
+                  </div>
+                </a>
+
+                
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-details-col">
+          
+            <div class="card detail-card">
+              <div class="card-label">Technical Skills</div>
+             
+              <div class="skills-wrap">
+                 <span class="skill-chip">SQL</span>
+                  <span class="skill-chip">JAVA</span>
+                <span class="skill-chip">Python</span>
+                <span class="skill-chip">scikit-learn</span>
+                <span class="skill-chip">NLTK / spaCy</span>
+                <span class="skill-chip">TF-IDF</span>
+                <span class="skill-chip">Logistic Regression</span>
+                <span class="skill-chip">Pandas / NumPy</span>
+                <span class="skill-chip">Flask</span>
+                <span class="skill-chip">HTML / CSS / JS</span>
+                <span class="skill-chip">Machine Learning</span>
+                <span class="skill-chip">NLP</span>
+                <span class="skill-chip">Gemini API</span>
+                <span class="skill-chip">HIBERNATE</span>
+                 <span class="skill-chip">SERVLETS</span>
+                  <span class="skill-chip">JDBC</span>
+              </div>
+            </div>
+
+      
+            <div class="card detail-card">
+              <div class="card-label">Education</div>
+              
+              <div class="edu-item">
+                <div class="edu-degree">MCA</div>
+                <div class="edu-college">MUMBAI UNIVERSITYV</div>
+                <div class="edu-years">2026🎓</div>
+              </div>
+            </div>
+
+           
+            <div class="card detail-card">
+              <div class="card-label">Project Stats</div>
+             
+              <div class="stats-grid">
+                <div class="stat-block">
+                  <div class="stat-num">90%+</div>
+                  <div class="stat-lbl">Accuracy</div>
+                </div>
+                <div class="stat-block">
+                  <div class="stat-num">3</div>
+                  <div class="stat-lbl">ML Models</div>
+                </div>
+                <div class="stat-block">
+                  <div class="stat-num">TF-IDF</div>
+                  <div class="stat-lbl">Feature Method</div>
+                </div>
+                <div class="stat-block">
+                  <div class="stat-num">NLP</div>
+                  <div class="stat-lbl">Core Tech</div>
+                </div>
+              </div>
+            </div>
+
+           
+            <div class="card detail-card">
+              <div class="card-label">About This Project</div>
+             
+              <div class="project-desc">
+                <strong>TruthLens</strong> is an AI-powered fake news detection
+                system built with Python, NLP, and supervised ML. It uses TF-IDF
+                vectorization with Logistic Regression and Passive Aggressive
+                Classifier to analyze linguistic patterns and determine
+                credibility — enhanced with real-time Gemini AI analysis for
+                deeper context understanding.
+              </div>
+              <div class="tech-stack-row">
+                <span class="tech-tag">Python</span>
+                <span class="tech-tag">scikit-learn</span>
+                <span class="tech-tag">Gemini API</span>
+                <span class="tech-tag">HTML/CSS/JS</span>
+                <span class="tech-tag">Flask</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <div class="toast" id="toast"></div>
+    <div
+      class="sidebar-overlay"
+      id="sidebarOverlay"
+      onclick="toggleSidebar()"
+    ></div>
+
+    <script src="static/js/config.js"></script>
+    <script src="static/js/app.js"></script>
+  </body>
+</html>
