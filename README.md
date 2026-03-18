@@ -1,8 +1,6 @@
 # TruthLens v2 — AI Fake News Detector
 
-> An AI-powered fake news detection system using NLP, ML, and the Gemini API.
-
----
+> An AI-powered fake news detection system using NLP, ML, and api
 
 ## Folder Structure
 
@@ -26,35 +24,7 @@ TruthLens/
     └── project_report.md
 ```
 
----
 
-## Setup (First Time)
-
-**Step 1 — Create your config file**
-
-Create `static/js/config.js` with:
-```js
-const GEMINI_API_KEY = "your-key-here";
-```
-Get your free key at: https://aistudio.google.com
-
-**Step 2 — Run local server**
-```bash
-python -m http.server 8080
-```
-
-**Step 3 — Open browser**
-```
-http://localhost:8080
-```
-
----
-
-## Hardcode Your About Page Details
-
-Open `index.html` and search for `← YOUR` — every field is marked.
-
----
 
 ## Tech Stack
 
