@@ -1,8 +1,7 @@
-# TruthLens v2 — AI Fake News Detector
+
 
 > An AI-powered fake news detection system using NLP, ML, and api
 
-## Folder Structure
 
 ```
 TruthLens/
@@ -13,7 +12,7 @@ TruthLens/
 │   ├── css/style.css
 │   ├── js/
 │   │   ├── app.js
-│   │   └── config.js        ← YOU CREATE THIS (not on GitHub)
+│   │   └── config.js      
 │   └── images/
 │       └── README.txt
 ├── model/
@@ -26,7 +25,7 @@ TruthLens/
 
 
 
-## Tech Stack
+ Tech Stack
 
 | Layer    | Tech |
 |----------|------|
@@ -37,8 +36,13 @@ TruthLens/
 | Backend* | Flask (optional) |
 
 ---
+ Tech |
+HTML, CSS, JavaScript |
+| Google Gemini 1.5 Flash |
+| Logistic Regression, PAC, Naive Bayes |
+| TF-IDF, NLTK, spaCy |
+| Flask |
 
-## Model Accuracy
 
 | Model | Accuracy |
 |-------|----------|
